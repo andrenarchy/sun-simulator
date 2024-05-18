@@ -68,7 +68,9 @@ const config = {
     longitude: 13.404954,
   },
   // Orientation of coordinate system
-  x_azimuth: 302 / 180 * Math.PI
+  x_azimuth: 302 / 180 * Math.PI,
+  // 2000s of the day are rendered in 1s
+  animationSpeed: 2000
 }
 camera.position.set(0, 5, 8)
 
@@ -139,24 +141,49 @@ sun.shadow.camera.bottom = -50
 sun.shadow.camera.top = 50
 scene.add( sun );
 
-function setSunPosition(date) {
+function getSunPosition(date) {
   const { azimuth, zenith } = suncalc.getPosition(date, config.location.latitude, config.location.longitude)
-  console.log(azimuth/Math.PI*180)
-  console.log(zenith)
-  sun.position.set(
+  return [
     10*Math.sin(-azimuth+config.x_azimuth) * Math.sin(zenith),
     10*Math.cos(zenith),
     10*Math.cos(-azimuth+config.x_azimuth) * Math.sin(zenith),
-  )
-  //renderer.shadowMap.needsUpdate = true;
-  console.log(sun.position)
+  ]
 }
-// setSunPosition(new Date())
-setSunPosition(new Date('2024-05-18T12:30:00Z'))
+const { civilDawn, civilDusk } = suncalc.getSunTimes(
+  config.date,
+  config.location.latitude,
+  config.location.longitude,
+  0,
+  false,
+  true
+)
+const frames = Math.ceil((civilDusk.ts - civilDawn.ts)/1000/config.animationSpeed)
+const times = [...Array(frames).keys()]
+const sunPositions = times.map(seconds => {
+  const date = new Date(civilDawn.ts)
+  date.setSeconds(date.getSeconds() + seconds*config.animationSpeed)
+  return getSunPosition(date)
+})
+const sunPositionKF = new THREE.VectorKeyframeTrack(
+  '.position',
+  times,
+  sunPositions.flatMap(v => v)
+)
+const sunIntensityKF =  new THREE.NumberKeyframeTrack(
+  '.intensity',
+  times,
+  sunPositions.flatMap(v => v[1]>=0 ? 1 : 0)
+)
+const sunClip = new THREE.AnimationClip('sun', -1, [sunPositionKF, sunIntensityKF]);
+const sunMixer = new THREE.AnimationMixer(sun);
+const sunAction = sunMixer.clipAction(sunClip);
+sunAction.play()
 
-
+const clock = new THREE.Clock();
 function animate() {
 	requestAnimationFrame( animate );
+  const delta = clock.getDelta();
+  sunMixer.update(delta);
   controls.update();
 	renderer.render( scene, camera );
 }
