@@ -72,7 +72,6 @@ const config = {
   // 2000s of the day are rendered in 1s
   animationSpeed: 2000
 }
-camera.position.set(0, 5, 8)
 
 {
   // building below
@@ -127,6 +126,10 @@ camera.position.set(0, 5, 8)
   mesh.castShadow = true;
   scene.add( mesh );
 }
+
+camera.position.set(0, 5, 8)
+controls.target.set(config.terrace.width/2, 0, 0)
+controls.update()
 
 const ambientLight = new THREE.AmbientLight( 0x404040 ); // soft white light
 scene.add( ambientLight );
