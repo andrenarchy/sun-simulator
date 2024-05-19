@@ -191,7 +191,6 @@ function animate() {
   const seconds = sunMixer.time;
   const date = new Date(civilDawn.ts);
   date.setSeconds(date.getSeconds() + Math.floor(seconds % frames)*config.animationSpeed)
-  console.log(date.toISOString())
   info.textContent = date.toLocaleString(undefined, { timeZone: 'Europe/Berlin', timeZoneName: 'short'});
 
   controls.update();
