@@ -61,7 +61,7 @@ const config = {
     depth: 2.25,
     x_gap_left: 0.36
   },
-  date: '2024-05-16',
+  date: new Date().toISOString().slice(0,10),
   // Berlin
   location: {
     latitude: 52.520008,
@@ -155,10 +155,7 @@ function getSunPosition(date) {
 const { civilDawn, civilDusk } = suncalc.getSunTimes(
   config.date,
   config.location.latitude,
-  config.location.longitude,
-  0,
-  false,
-  true
+  config.location.longitude
 )
 const frames = Math.ceil((civilDusk.ts - civilDawn.ts)/1000/config.animationSpeed)
 const times = [...Array(frames).keys()]
@@ -182,11 +179,21 @@ const sunMixer = new THREE.AnimationMixer(sun);
 const sunAction = sunMixer.clipAction(sunClip);
 sunAction.play()
 
+const info = document.querySelector('#info')
+
 const clock = new THREE.Clock();
 function animate() {
 	requestAnimationFrame( animate );
+
   const delta = clock.getDelta();
   sunMixer.update(delta);
+
+  const seconds = sunMixer.time;
+  const date = new Date(civilDawn.ts);
+  date.setSeconds(date.getSeconds() + Math.floor(seconds % frames)*config.animationSpeed)
+  console.log(date.toISOString())
+  info.textContent = date.toLocaleString(undefined, { timeZone: 'Europe/Berlin', timeZoneName: 'short'});
+
   controls.update();
 	renderer.render( scene, camera );
 }

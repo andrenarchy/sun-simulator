@@ -5,6 +5,20 @@
 		<title>Sun Simulator</title>
 		<style>
 			body { margin: 0; }
+            #info {
+                position: absolute;
+                top: 0px;
+                right: 0px;
+                width: 250px;
+                text-align: left;
+                z-index: 100;
+                display:block;
+                padding: 10px 20px;
+                border-bottom-left-radius: 10px;
+                background-color: #88888888;
+                color: white;
+                font: bold 1em "Fira Sans", sans-serif;
+            }
 		</style>
         <script type="importmap">
             {
@@ -17,6 +31,7 @@
           </script>
 	</head>
 	<body>
+        <div id="info"></div>
 		<script type="module" src="main.js"></script>
 	</body>
 </html>
